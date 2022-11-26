@@ -6,10 +6,12 @@ import (
 	"tink/handlers/teacher"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type Server struct {
 	router *gin.Engine
+	db     *gorm.DB
 }
 
 func (s *Server) Run() {
@@ -24,13 +26,14 @@ func (s *Server) Setup() {
 		})
 	})
 
-	student.New().Setup(group)
-	teacher.New().Setup(group)
+	student.New(s.db).Setup(group)
+	teacher.New(s.db).Setup(group)
 }
 
-func New() *Server {
+func New(db *gorm.DB) *Server {
 	router := gin.Default()
 	return &Server{
 		router: router,
+		db:     db,
 	}
 }

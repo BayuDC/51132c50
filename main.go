@@ -1,10 +1,12 @@
 package main
 
 import (
+	"tink/models"
 	"tink/server"
 )
 
 func main() {
-	s := server.New()
+	db := models.ConnectDb()
+	s := server.New(db)
 	s.Run()
 }

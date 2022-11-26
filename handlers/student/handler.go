@@ -1,13 +1,15 @@
 package student
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
 
-type Handler struct{}
+type Handler struct {
+	db *gorm.DB
+}
 
 func (h *Handler) Index(c *gin.Context) {
-	c.JSON(200, gin.H{
-		"message": "Hello Student",
-	})
 }
 func (h *Handler) Show(c *gin.Context) {
 }
@@ -28,6 +30,6 @@ func (h *Handler) Setup(router *gin.RouterGroup) {
 	r.DELETE("/:id", h.Destroy)
 }
 
-func New() *Handler {
-	return &Handler{}
+func New(db *gorm.DB) *Handler {
+	return &Handler{db}
 }
