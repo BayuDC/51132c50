@@ -2,6 +2,8 @@ package server
 
 import (
 	"net/http"
+	"tink/handlers/student"
+	"tink/handlers/teacher"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,11 +17,15 @@ func (s *Server) Run() {
 	s.router.Run()
 }
 func (s *Server) Setup() {
-	s.router.GET("/", func(c *gin.Context) {
+	group := s.router.Group("/api")
+	group.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Hello World",
 		})
 	})
+
+	student.New().Setup(group)
+	teacher.New().Setup(group)
 }
 
 func New() *Server {
