@@ -2,6 +2,7 @@ package server
 
 import (
 	"net/http"
+	"tink/handlers/auth"
 	"tink/handlers/student"
 	"tink/handlers/teacher"
 
@@ -26,6 +27,7 @@ func (s *Server) Setup() {
 		})
 	})
 
+	auth.New(s.db).Setup(group)
 	student.New(s.db).Setup(group)
 	teacher.New(s.db).Setup(group)
 }
