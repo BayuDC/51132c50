@@ -49,17 +49,24 @@ func (h *Handler) Login(c *gin.Context) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"username": user.Username,
-		"exp":      time.Now().Add(time.Hour * 24).Unix(),
+		"exp":      time.Now().Add(time.Hour * 24 * 3).Unix(),
 	})
 
 	tokenString, _ := token.SignedString([]byte("mysecretkey"))
-
-	c.JSON(http.StatusOK, gin.H{
-		"token": tokenString,
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "token",
+		Value:    tokenString,
+		HttpOnly: true,
+		MaxAge:   time.Now().Add(time.Hour * 24 * 3).Second(),
 	})
+	c.JSON(http.StatusNoContent, nil)
 }
 func (h *Handler) Logout(c *gin.Context) {
-
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:   "token",
+		MaxAge: -1,
+	})
+	c.JSON(http.StatusNoContent, nil)
 }
 
 func (h *Handler) Setup(router *gin.RouterGroup) {
