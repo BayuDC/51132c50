@@ -5,6 +5,7 @@ import (
 	"tink/handlers/auth"
 	"tink/handlers/student"
 	"tink/handlers/teacher"
+	"tink/middlewares"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -26,6 +27,7 @@ func (s *Server) Setup() {
 			"message": "Hello World",
 		})
 	})
+	group.Use(middlewares.Auth())
 
 	auth.New(s.db).Setup(group)
 	student.New(s.db).Setup(group)

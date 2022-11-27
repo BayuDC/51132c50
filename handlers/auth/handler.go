@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"time"
+	"tink/middlewares"
 	"tink/models"
 
 	"github.com/gin-gonic/gin"
@@ -57,13 +58,15 @@ func (h *Handler) Login(c *gin.Context) {
 		Name:     "token",
 		Value:    tokenString,
 		HttpOnly: true,
-		MaxAge:   time.Now().Add(time.Hour * 24 * 3).Second(),
+		MaxAge:   60 * 60 * 24 * 3,
+		Path:     "/",
 	})
 	c.JSON(http.StatusNoContent, nil)
 }
 func (h *Handler) Logout(c *gin.Context) {
 	http.SetCookie(c.Writer, &http.Cookie{
 		Name:   "token",
+		Path:   "/",
 		MaxAge: -1,
 	})
 	c.JSON(http.StatusNoContent, nil)
@@ -73,7 +76,7 @@ func (h *Handler) Setup(router *gin.RouterGroup) {
 	r := router.Group("/auth")
 
 	r.POST("/login", h.Login)
-	r.POST("/logout", h.Logout)
+	r.POST("/logout", middlewares.Guard(), h.Logout)
 }
 func New(db *gorm.DB) *Handler {
 	return &Handler{db}

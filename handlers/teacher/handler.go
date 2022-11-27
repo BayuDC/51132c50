@@ -3,6 +3,7 @@ package teacher
 import (
 	"errors"
 	"net/http"
+	"tink/middlewares"
 	"tink/models"
 
 	"github.com/gin-gonic/gin"
@@ -115,6 +116,7 @@ func (h *Handler) Destroy(c *gin.Context) {
 func (h *Handler) Setup(router *gin.RouterGroup) {
 	r := router.Group("/teachers")
 
+	r.Use(middlewares.Guard())
 	r.GET("/", h.Index)
 	r.GET("/:id", h.Show)
 	r.POST("/", h.Store)
