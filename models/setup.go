@@ -11,11 +11,6 @@ func ConnectDb() *gorm.DB {
 	if err != nil {
 		panic("Failed to connect to database")
 	}
-	database.AutoMigrate(
-		&Student{},
-		&Teacher{},
-		&User{},
-	)
 
 	return database
 }
