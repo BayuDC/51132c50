@@ -59,7 +59,7 @@ func (h *Handler) Store(c *gin.Context) {
 		Fullname: body.Fullname,
 		User: models.User{
 			Username: body.Username,
-			Role:     models.RoleStudent,
+			Role:     models.RoleTeacher,
 		},
 	}
 	if err := h.db.Create(&teacher).Error; err != nil {
