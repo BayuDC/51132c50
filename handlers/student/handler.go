@@ -16,7 +16,11 @@ type Handler struct {
 
 func (h *Handler) Index(c *gin.Context) {
 	var students []models.Student
-	h.db.Find(&students)
+	h.db.Table("students").
+		Select("students.id, students.fullname, users.username").
+		Joins("left join users on users.id = user_id").
+		Find(&students)
+
 	c.JSON(http.StatusOK, gin.H{
 		"students": students,
 	})
@@ -25,7 +29,7 @@ func (h *Handler) Show(c *gin.Context) {
 	var student models.Student
 	id := c.Param("id")
 
-	if err := h.db.First(&student, id).Error; err != nil {
+	if err := h.db.Preload("User").First(&student, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
 				"message": "Student not found",
@@ -37,10 +41,13 @@ func (h *Handler) Show(c *gin.Context) {
 		}
 		return
 	}
+
+	student.Username = student.User.Username
 	c.JSON(http.StatusOK, gin.H{
 		"student": student,
 	})
 }
+
 func (h *Handler) Store(c *gin.Context) {
 	var body CreateStudentSchema
 
@@ -52,19 +59,30 @@ func (h *Handler) Store(c *gin.Context) {
 	}
 
 	student := models.Student{
-		Name: body.Name,
+		Fullname: body.Fullname,
+		User: models.User{
+			Username: body.Username,
+			Role:     models.RoleStudent,
+		},
 	}
-	h.db.Create(&student)
+	if err := h.db.Create(&student).Error; err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	student.Username = student.User.Username
 	c.JSON(http.StatusCreated, gin.H{
 		"student": student,
 	})
 }
+
 func (h *Handler) Update(c *gin.Context) {
 	var body UpdateStudentSchema
 	var student models.Student
 	id := c.Param("id")
 
-	if err := h.db.First(&student, id).Error; err != nil {
+	if err := h.db.Preload("User").First(&student, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
 				"message": "Student not found",
@@ -83,20 +101,27 @@ func (h *Handler) Update(c *gin.Context) {
 		return
 	}
 
-	if body.Name != nil {
-		student.Name = *body.Name
+	if body.Fullname != nil {
+		student.Fullname = *body.Fullname
+	}
+	if err := h.db.Omit("User").Save(&student).Error; err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+		})
+		return
 	}
 
-	h.db.Save(&student)
+	student.Username = student.User.Username
 	c.JSON(http.StatusOK, gin.H{
 		"student": student,
 	})
 }
+
 func (h *Handler) Destroy(c *gin.Context) {
 	var student models.Student
 	id := c.Param("id")
 
-	if err := h.db.First(&student, id).Error; err != nil {
+	if err := h.db.Preload("User").First(&student, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
 				"message": "Student not found",
@@ -109,7 +134,7 @@ func (h *Handler) Destroy(c *gin.Context) {
 		return
 	}
 
-	h.db.Delete(&student)
+	h.db.Delete(&student.User)
 	c.JSON(http.StatusNoContent, nil)
 }
 

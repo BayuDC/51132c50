@@ -1,5 +1,11 @@
 package models
 
+import (
+	"errors"
+
+	"gorm.io/gorm"
+)
+
 type role string
 
 const (
@@ -13,4 +19,16 @@ type User struct {
 	Username string `json:"username" gorm:"unique"`
 	Password string `json:"password"`
 	Role     role   `json:"role" gorm:"type:role"`
+}
+
+func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
+	count := int64(0)
+	err = tx.Model(&User{}).
+		Where("username = ?", u.Username).
+		Count(&count).
+		Error
+	if count > 0 {
+		err = errors.New("Username is taken")
+	}
+	return
 }
