@@ -64,15 +64,21 @@ func (h *Handler) UpdatePassword(c *gin.Context) {
 		return
 	}
 
-	c.Status(http.StatusNoContent)
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:   "token",
+		Path:   "/",
+		MaxAge: -1,
+	})
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Please login again with your new password",
+	})
 }
 
 func (h *Handler) Setup(router *gin.RouterGroup) {
 	r := router.Group("/profile")
 
-	r.Use(middlewares.Guard())
-	r.GET("/", h.Index)
-	r.PATCH("/password", h.UpdatePassword)
+	r.GET("/", middlewares.Guard(), h.Index)
+	r.PATCH("/password", middlewares.Guard(true), h.UpdatePassword)
 }
 
 func New(db *gorm.DB) *Handler {

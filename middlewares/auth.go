@@ -38,7 +38,17 @@ func Auth() gin.HandlerFunc {
 	}
 }
 
-func Guard() gin.HandlerFunc {
+func Guard(args ...interface{}) gin.HandlerFunc {
+	bypass := false
+	for _, arg := range args {
+		switch t := arg.(type) {
+		case bool:
+			bypass = t
+		default:
+			panic("Unknown argument")
+		}
+	}
+
 	return func(c *gin.Context) {
 		claims, ok := c.Get("claims")
 		if !ok {
@@ -56,7 +66,7 @@ func Guard() gin.HandlerFunc {
 			return
 		}
 		secure, ok := claimStrings["secure"].(bool)
-		if !ok || !secure {
+		if !bypass && (!ok || !secure) {
 			c.AbortWithStatusJSON(http.StatusMultipleChoices, gin.H{
 				"message": "Please set your password first",
 			})

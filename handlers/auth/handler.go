@@ -80,7 +80,7 @@ func (h *Handler) Setup(router *gin.RouterGroup) {
 	r := router.Group("/auth")
 
 	r.POST("/login", h.Login)
-	r.POST("/logout", middlewares.Guard(), h.Logout)
+	r.POST("/logout", middlewares.Guard(true), h.Logout)
 }
 func New(db *gorm.DB) *Handler {
 	return &Handler{db}
