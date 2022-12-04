@@ -50,9 +50,16 @@ func Guard() gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
-		claim, ok := claimStrings["username"].(string)
-		if !ok || claim == "" {
+		username, ok := claimStrings["username"].(string)
+		if !ok || username == "" {
 			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+		secure, ok := claimStrings["secure"].(bool)
+		if !ok || !secure {
+			c.AbortWithStatusJSON(http.StatusMultipleChoices, gin.H{
+				"message": "Please set your password first",
+			})
 			return
 		}
 		c.Next()

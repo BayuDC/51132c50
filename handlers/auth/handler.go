@@ -41,11 +41,9 @@ func (h *Handler) Login(c *gin.Context) {
 		return
 	}
 
+	defaultPassword := false
 	if user.Password == "" && body.Password == "" {
-		// c.AbortWithStatusJSON(http.StatusMultipleChoices, gin.H{
-		// 	"message": "Please set your password first",
-		// })
-		// return
+		defaultPassword = true
 	} else if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password)); err != nil {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"message": "Password incorrect",
@@ -55,6 +53,7 @@ func (h *Handler) Login(c *gin.Context) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"username": user.Username,
+		"secure":   !defaultPassword,
 		"exp":      time.Now().Add(time.Hour * 24 * 3).Unix(),
 	})
 
