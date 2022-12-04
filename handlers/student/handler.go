@@ -138,15 +138,13 @@ func (h *Handler) Destroy(c *gin.Context) {
 	c.JSON(http.StatusNoContent, nil)
 }
 
-func (h *Handler) Setup(router *gin.RouterGroup) {
-	r := router.Group("/students")
-
+func (h *Handler) Setup(r *gin.RouterGroup) {
 	r.Use(middlewares.Guard())
-	r.GET("/", h.Index)
-	r.GET("/:id", h.Show)
-	r.POST("/", h.Store)
-	r.PUT("/:id", h.Update)
-	r.DELETE("/:id", h.Destroy)
+	r.GET("/students", h.Index)
+	r.GET("/students/:id", h.Show)
+	r.POST("/students", h.Store)
+	r.PUT("/students/:id", h.Update)
+	r.DELETE("/students/:id", h.Destroy)
 }
 
 func New(db *gorm.DB) *Handler {

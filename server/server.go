@@ -25,7 +25,7 @@ func (s *Server) Run() {
 }
 func (s *Server) Setup() {
 	group := s.router.Group("/api")
-	group.GET("/", func(c *gin.Context) {
+	group.GET("", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Hello World",
 		})

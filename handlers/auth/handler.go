@@ -99,12 +99,10 @@ func (h *Handler) Logout(c *gin.Context) {
 	c.JSON(http.StatusNoContent, nil)
 }
 
-func (h *Handler) Setup(router *gin.RouterGroup) {
-	r := router.Group("/auth")
-
-	r.GET("/", middlewares.Guard(), h.Index)
-	r.POST("/login", h.Login)
-	r.POST("/logout", middlewares.Guard(true), h.Logout)
+func (h *Handler) Setup(r *gin.RouterGroup) {
+	r.GET("/auth", middlewares.Guard(), h.Index)
+	r.POST("/auth/login", h.Login)
+	r.POST("/auth/logout", middlewares.Guard(true), h.Logout)
 }
 func New(db *gorm.DB) *Handler {
 	return &Handler{db}
