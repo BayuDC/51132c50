@@ -16,8 +16,9 @@ const (
 
 type User struct {
 	Id       int    `json:"id" gorm:"primaryKey"`
+	Fullname string `json:"fullname" gorm:"->"`
 	Username string `json:"username" gorm:"unique"`
-	Password string `json:"password"`
+	Password string `json:"-"`
 	Role     role   `json:"role" gorm:"type:role"`
 }
 
