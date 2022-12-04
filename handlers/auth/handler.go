@@ -18,6 +18,17 @@ type Handler struct {
 	db *gorm.DB
 }
 
+func (h *Handler) Index(c *gin.Context) {
+	claims, _ := c.Get("claims")
+	claimStrings, _ := claims.(jwt.MapClaims)
+
+	c.JSON(http.StatusOK, gin.H{
+		"username": claimStrings["username"].(string),
+		"fullname": claimStrings["fullname"].(string),
+		// "role": claimStrings["role"].(string),
+	})
+}
+
 func (h *Handler) Login(c *gin.Context) {
 	var body LoginSchema
 	var user models.User
@@ -41,6 +52,16 @@ func (h *Handler) Login(c *gin.Context) {
 		}
 		return
 	}
+	switch user.Role {
+	case models.RoleStudent:
+		var student models.Student
+		h.db.Where("user_id = ?", user.Id).Find(&student)
+		user.Fullname = student.Fullname
+	case models.RoleTeacher:
+		var teacher models.Teacher
+		h.db.Where("user_id = ?", user.Id).Find(&teacher)
+		user.Fullname = teacher.Fullname
+	}
 
 	defaultPassword := false
 	if user.Password == "" && body.Password == "" {
@@ -53,6 +74,7 @@ func (h *Handler) Login(c *gin.Context) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"fullname": user.Fullname,
 		"username": user.Username,
 		"secure":   !defaultPassword,
 		"exp":      time.Now().Add(time.Hour * 24 * 3).Unix(),
@@ -80,6 +102,7 @@ func (h *Handler) Logout(c *gin.Context) {
 func (h *Handler) Setup(router *gin.RouterGroup) {
 	r := router.Group("/auth")
 
+	r.GET("/", middlewares.Guard(), h.Index)
 	r.POST("/login", h.Login)
 	r.POST("/logout", middlewares.Guard(true), h.Logout)
 }

@@ -28,8 +28,6 @@ services:
     volumes:
       - data:/data/postgres
     restart: unless-stopped
-    ports:
-      - 5432:5432
   something-important:
     image: migrate/migrate
     volumes:
