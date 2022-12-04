@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 	"tink/handlers/auth"
+	"tink/handlers/profile"
 	"tink/handlers/student"
 	"tink/handlers/teacher"
 	"tink/middlewares"
@@ -30,6 +31,7 @@ func (s *Server) Setup() {
 	group.Use(middlewares.Auth())
 
 	auth.New(s.db).Setup(group)
+	profile.New(s.db).Setup(group)
 	student.New(s.db).Setup(group)
 	teacher.New(s.db).Setup(group)
 }
