@@ -3,6 +3,7 @@ package auth
 import (
 	"errors"
 	"net/http"
+	"os"
 	"time"
 	"tink/middlewares"
 	"tink/models"
@@ -57,7 +58,7 @@ func (h *Handler) Login(c *gin.Context) {
 		"exp":      time.Now().Add(time.Hour * 24 * 3).Unix(),
 	})
 
-	tokenString, _ := token.SignedString([]byte("mysecretkey"))
+	tokenString, _ := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	http.SetCookie(c.Writer, &http.Cookie{
 		Name:     "token",
 		Value:    tokenString,

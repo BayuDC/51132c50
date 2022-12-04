@@ -3,6 +3,7 @@ package middlewares
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	jwt "github.com/golang-jwt/jwt/v4"
@@ -23,7 +24,7 @@ func Auth() gin.HandlerFunc {
 				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 			}
 
-			return []byte("mysecretkey"), nil
+			return []byte(os.Getenv("JWT_SECRET")), nil
 		})
 
 		claims, ok := token.Claims.(jwt.MapClaims)
