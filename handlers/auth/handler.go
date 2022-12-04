@@ -42,13 +42,11 @@ func (h *Handler) Login(c *gin.Context) {
 	}
 
 	if user.Password == "" && body.Password == "" {
-		c.AbortWithStatusJSON(http.StatusMultipleChoices, gin.H{
-			"message": "Please set your password first",
-		})
-		return
-	}
-
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password)); err != nil {
+		// c.AbortWithStatusJSON(http.StatusMultipleChoices, gin.H{
+		// 	"message": "Please set your password first",
+		// })
+		// return
+	} else if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password)); err != nil {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"message": "Password incorrect",
 		})

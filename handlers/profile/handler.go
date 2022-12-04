@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	jwt "github.com/golang-jwt/jwt/v4"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -29,12 +30,12 @@ func (h *Handler) Index(c *gin.Context) {
 	if user.Role == models.RoleStudent {
 		var student models.Student
 		h.db.Where("user_id = ?", user.Id).Find(&student)
-		user.Fullname = student.User.Username
+		user.Fullname = student.Fullname
 	}
 	if user.Role == models.RoleTeacher {
 		var teacher models.Teacher
 		h.db.Where("user_id = ?", user.Id).Find(&teacher)
-		user.Fullname = teacher.User.Username
+		user.Fullname = teacher.Fullname
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -42,7 +43,28 @@ func (h *Handler) Index(c *gin.Context) {
 	})
 }
 func (h *Handler) UpdatePassword(c *gin.Context) {
+	claims, _ := c.Get("claims")
+	claimStrings, _ := claims.(jwt.MapClaims)
+	claim, _ := claimStrings["username"].(string)
 
+	var body UpdatePasswordSchema
+
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
+
+	passwordHashed, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
+	if err := h.db.Model(&models.User{}).Where("username = ?", claim).Update("password", string(passwordHashed)).Error; err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }
 
 func (h *Handler) Setup(router *gin.RouterGroup) {
