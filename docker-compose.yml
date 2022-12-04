@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  app:
+    build: .
+    image: bayudc/tink
+    container_name: tink-app
+    ports:
+      - 8080:8080
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_DATABASE=tink
+      - DB_USERNAME=myself
+      - DB_PASSWORD=sup3rs3cur3
+      - JWT_SECRET=RV8LMhCNUSYyZscvecfMIBex0kFSYn5w
+    depends_on:
+      - db
+  db:
+    image: postgres:14-alpine
+    container_name: tink-db
+    environment:
+      - POSTGRES_DB=tink
+      - POSTGRES_USER=myself
+      - POSTGRES_PASSWORD=sup3rs3cur3
+      - PGDATA=/data/postgres
+    volumes:
+      - data:/data/postgres
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+  something-important:
+    image: migrate/migrate
+    volumes:
+      - ./db/migrations:/data
+    command: ["-path", "/data", "-database", "postgres://myself:sup3rs3cur3@db:5432/tink?sslmode=disable", "up"]
+    depends_on:
+      - db
+volumes:
+  data:

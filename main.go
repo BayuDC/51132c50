@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"tink/models"
 	"tink/server"
 
@@ -9,10 +8,7 @@ import (
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	godotenv.Load()
 
 	db := models.ConnectDb()
 	s := server.New(db)
