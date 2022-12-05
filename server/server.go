@@ -2,14 +2,12 @@ package server
 
 import (
 	"net/http"
-	"os"
 	"tink/handlers/auth"
 	"tink/handlers/profile"
 	"tink/handlers/student"
 	"tink/handlers/teacher"
 	"tink/middlewares"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -40,10 +38,6 @@ func (s *Server) Setup() {
 
 func New(db *gorm.DB) *Server {
 	router := gin.Default()
-	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{os.Getenv("ORIGIN")}
-	config.AllowCredentials = true
-	router.Use(cors.New(config))
 	return &Server{
 		router: router,
 		db:     db,
