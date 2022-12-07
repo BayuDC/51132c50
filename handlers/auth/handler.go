@@ -25,7 +25,8 @@ func (h *Handler) Index(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"username": claimStrings["username"].(string),
 		"fullname": claimStrings["fullname"].(string),
-		// "role": claimStrings["role"].(string),
+		"secure":   claimStrings["secure"].(bool),
+		"role":     claimStrings["role"].(string),
 	})
 }
 
@@ -77,6 +78,7 @@ func (h *Handler) Login(c *gin.Context) {
 		"fullname": user.Fullname,
 		"username": user.Username,
 		"secure":   !defaultPassword,
+		"role":     string(user.Role),
 		"exp":      time.Now().Add(time.Hour * 24 * 3).Unix(),
 	})
 
