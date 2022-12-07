@@ -68,7 +68,7 @@ func Guard(args ...interface{}) gin.HandlerFunc {
 		}
 		secure, ok := claimStrings["secure"].(bool)
 		if !bypass && (!ok || !secure) {
-			c.AbortWithStatusJSON(http.StatusMultipleChoices, gin.H{
+			c.AbortWithStatusJSON(http.StatusTooEarly, gin.H{
 				"message": "Please set your password first",
 			})
 			return
