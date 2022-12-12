@@ -23,10 +23,12 @@ func (h *Handler) Index(c *gin.Context) {
 	claimStrings, _ := claims.(jwt.MapClaims)
 
 	c.JSON(http.StatusOK, gin.H{
-		"username": claimStrings["username"].(string),
-		"fullname": claimStrings["fullname"].(string),
-		"secure":   claimStrings["secure"].(bool),
-		"role":     claimStrings["role"].(string),
+		"user": gin.H{
+			"username": claimStrings["username"].(string),
+			"fullname": claimStrings["fullname"].(string),
+			"secure":   claimStrings["secure"].(bool),
+			"role":     claimStrings["role"].(string),
+		},
 	})
 }
 
