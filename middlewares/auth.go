@@ -12,7 +12,6 @@ import (
 func Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString, _ := c.Cookie("token")
-		fmt.Println(c.Request.Cookies())
 
 		if tokenString == "" {
 			c.Next()
