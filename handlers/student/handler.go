@@ -139,12 +139,14 @@ func (h *Handler) Destroy(c *gin.Context) {
 }
 
 func (h *Handler) Setup(r *gin.RouterGroup) {
-	r.Use(middlewares.Guard())
-	r.GET("/students", h.Index)
-	r.GET("/students/:id", h.Show)
-	r.POST("/students", h.Store)
-	r.PUT("/students/:id", h.Update)
-	r.DELETE("/students/:id", h.Destroy)
+	router := r.Group("")
+	router.Use(middlewares.Guard())
+	router.GET("/students", h.Index)
+	router.GET("/students/:id", h.Show)
+	router.Use(middlewares.Gate("admin"))
+	router.POST("/students", h.Store)
+	router.PUT("/students/:id", h.Update)
+	router.DELETE("/students/:id", h.Destroy)
 }
 
 func New(db *gorm.DB) *Handler {

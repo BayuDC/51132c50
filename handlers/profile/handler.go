@@ -75,8 +75,9 @@ func (h *Handler) UpdatePassword(c *gin.Context) {
 }
 
 func (h *Handler) Setup(r *gin.RouterGroup) {
-	r.GET("/profile", middlewares.Guard(), h.Index)
-	r.PATCH("/profile/password", middlewares.Guard(true), h.UpdatePassword)
+	router := r.Group("")
+	router.GET("/profile", middlewares.Guard(), h.Index)
+	router.PATCH("/profile/password", middlewares.Guard(true), h.UpdatePassword)
 }
 
 func New(db *gorm.DB) *Handler {

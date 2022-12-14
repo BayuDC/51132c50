@@ -75,3 +75,16 @@ func Guard(args ...interface{}) gin.HandlerFunc {
 		c.Next()
 	}
 }
+func Gate(role string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		claims, _ := c.Get("claims")
+		claimStrings, _ := claims.(jwt.MapClaims)
+		claim, _ := claimStrings["role"].(string)
+
+		if claim != role {
+			c.AbortWithStatus(http.StatusForbidden)
+			return
+		}
+		c.Next()
+	}
+}

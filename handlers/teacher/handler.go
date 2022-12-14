@@ -25,7 +25,7 @@ func (h *Handler) Index(c *gin.Context) {
 	})
 }
 func (h *Handler) Show(c *gin.Context) {
-	var teacher models.Student
+	var teacher models.Teacher
 	id := c.Param("id")
 
 	if err := h.db.Preload("User").First(&teacher, id).Error; err != nil {
@@ -134,12 +134,14 @@ func (h *Handler) Destroy(c *gin.Context) {
 }
 
 func (h *Handler) Setup(r *gin.RouterGroup) {
-	r.Use(middlewares.Guard())
-	r.GET("/teachers", h.Index)
-	r.GET("/teachers/:id", h.Show)
-	r.POST("/teachers", h.Store)
-	r.PUT("/teachers/:id", h.Update)
-	r.DELETE("/teachers/:id", h.Destroy)
+	router := r.Group("")
+	router.Use(middlewares.Guard())
+	router.GET("/teachers", h.Index)
+	router.GET("/teachers/:id", h.Show)
+	router.Use(middlewares.Gate("admin"))
+	router.POST("/teachers", h.Store)
+	router.PUT("/teachers/:id", h.Update)
+	router.DELETE("/teachers/:id", h.Destroy)
 }
 
 func New(db *gorm.DB) *Handler {
