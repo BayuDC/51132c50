@@ -1,8 +1,7 @@
 package main
 
 import (
-	"tink/models"
-	"tink/server"
+	"tink/core"
 
 	"github.com/joho/godotenv"
 )
@@ -10,7 +9,7 @@ import (
 func main() {
 	godotenv.Load()
 
-	db := models.ConnectDb()
-	s := server.New(db)
-	s.Run()
+	db := core.ConnectDb()
+	app := core.CreateApp(db)
+	app.Run()
 }

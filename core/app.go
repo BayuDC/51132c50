@@ -1,4 +1,4 @@
-package server
+package core
 
 import (
 	"net/http"
@@ -36,7 +36,7 @@ func (s *Server) Setup() {
 	teacher.New(s.db).Setup(group)
 }
 
-func New(db *gorm.DB) *Server {
+func CreateApp(db *gorm.DB) *Server {
 	router := gin.Default()
 	return &Server{
 		router: router,
