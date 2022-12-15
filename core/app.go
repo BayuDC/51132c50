@@ -3,6 +3,7 @@ package core
 import (
 	"net/http"
 	"tink/handlers/auth"
+	"tink/handlers/group"
 	"tink/handlers/profile"
 	"tink/handlers/student"
 	"tink/handlers/teacher"
@@ -22,18 +23,19 @@ func (s *Server) Run() {
 	s.router.Run()
 }
 func (s *Server) Setup() {
-	group := s.router.Group("/api")
-	group.GET("", func(c *gin.Context) {
+	g := s.router.Group("/api")
+	g.GET("", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Hello World",
 		})
 	})
-	group.Use(middlewares.Auth())
+	g.Use(middlewares.Auth())
 
-	auth.New(s.db).Setup(group)
-	profile.New(s.db).Setup(group)
-	student.New(s.db).Setup(group)
-	teacher.New(s.db).Setup(group)
+	auth.New(s.db).Setup(g)
+	profile.New(s.db).Setup(g)
+	student.New(s.db).Setup(g)
+	teacher.New(s.db).Setup(g)
+	group.New(s.db).Setup(g)
 }
 
 func CreateApp(db *gorm.DB) *Server {
