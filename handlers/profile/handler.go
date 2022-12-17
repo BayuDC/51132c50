@@ -6,7 +6,6 @@ import (
 	"tink/models"
 
 	"github.com/gin-gonic/gin"
-	jwt "github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -16,12 +15,10 @@ type Handler struct {
 }
 
 func (h *Handler) Index(c *gin.Context) {
-	claims, _ := c.Get("claims")
-	claimStrings, _ := claims.(jwt.MapClaims)
-	claim, _ := claimStrings["username"].(string)
+	username := (c.MustGet("user")).(*middlewares.User).Username
 
 	var user models.User
-	if err := h.db.Where("username = ?", claim).Find(&user).Error; err != nil {
+	if err := h.db.Where("username = ?", username).Find(&user).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"message": err.Error(),
 		})
@@ -43,9 +40,7 @@ func (h *Handler) Index(c *gin.Context) {
 	})
 }
 func (h *Handler) UpdatePassword(c *gin.Context) {
-	claims, _ := c.Get("claims")
-	claimStrings, _ := claims.(jwt.MapClaims)
-	claim, _ := claimStrings["username"].(string)
+	username := (c.MustGet("user")).(*middlewares.User).Username
 
 	var body UpdatePasswordSchema
 
@@ -59,7 +54,7 @@ func (h *Handler) UpdatePassword(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
-	if err := h.db.Model(&models.User{}).Where("username = ?", claim).Update("password", string(passwordHashed)).Error; err != nil {
+	if err := h.db.Model(&models.User{}).Where("username = ?", username).Update("password", string(passwordHashed)).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}

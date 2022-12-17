@@ -9,6 +9,13 @@ import (
 	jwt "github.com/golang-jwt/jwt/v4"
 )
 
+type User struct {
+	Username string
+	Fullname string
+	Secure   bool
+	Role     string
+}
+
 func Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString, _ := c.Cookie("token")
@@ -26,14 +33,15 @@ func Auth() gin.HandlerFunc {
 			return []byte(os.Getenv("JWT_SECRET")), nil
 		})
 
-		claims, ok := token.Claims.(jwt.MapClaims)
-
-		if !(ok && token.Valid) {
-			c.Next()
-			return
+		claims, _ := token.Claims.(jwt.MapClaims)
+		user := User{
+			Username: claims["username"].(string),
+			Fullname: claims["fullname"].(string),
+			Secure:   claims["secure"].(bool),
+			Role:     claims["role"].(string),
 		}
 
-		c.Set("claims", claims)
+		c.Set("user", &user)
 		c.Next()
 	}
 }
@@ -50,23 +58,18 @@ func Guard(args ...interface{}) gin.HandlerFunc {
 	}
 
 	return func(c *gin.Context) {
-		claims, ok := c.Get("claims")
+		userRaw, ok := c.Get("user")
 		if !ok {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
-		claimStrings, ok := claims.(jwt.MapClaims)
-		if !ok {
+		user := userRaw.(*User)
+
+		if user.Username == "" {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
-		username, ok := claimStrings["username"].(string)
-		if !ok || username == "" {
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-		secure, ok := claimStrings["secure"].(bool)
-		if !bypass && (!ok || !secure) {
+		if !bypass && (!user.Secure) {
 			c.AbortWithStatusJSON(http.StatusTooEarly, gin.H{
 				"message": "Please set your password first",
 			})
@@ -77,11 +80,9 @@ func Guard(args ...interface{}) gin.HandlerFunc {
 }
 func Gate(role string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		claims, _ := c.Get("claims")
-		claimStrings, _ := claims.(jwt.MapClaims)
-		claim, _ := claimStrings["role"].(string)
+		user := (c.MustGet("user")).(*User)
 
-		if claim != role {
+		if user.Role != role {
 			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
