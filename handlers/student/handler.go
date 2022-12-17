@@ -64,7 +64,7 @@ func (h *Handler) Store(c *gin.Context) {
 		},
 	}
 	if err := h.db.Create(&student).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	student.Username = student.User.Username
