@@ -27,7 +27,7 @@ func (h *Handler) Load(c *gin.Context) {
 		return
 	}
 
-	c.Set("group", group)
+	c.Set("group", &group)
 	c.Next()
 }
 
@@ -74,7 +74,7 @@ func (h *Handler) Update(c *gin.Context) {
 		return
 	}
 
-	group := (c.MustGet("group")).(models.Group)
+	group := (c.MustGet("group")).(*models.Group)
 
 	if body.Name != nil {
 		group.Name = *body.Name
@@ -89,7 +89,7 @@ func (h *Handler) Update(c *gin.Context) {
 }
 
 func (h *Handler) Delete(c *gin.Context) {
-	group := (c.MustGet("group")).(models.Group)
+	group := (c.MustGet("group")).(*models.Group)
 
 	if err := h.db.Delete(&group).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
