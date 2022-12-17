@@ -3,6 +3,7 @@ package core
 import (
 	"net/http"
 	"tink/handlers/auth"
+	"tink/handlers/course"
 	"tink/handlers/group"
 	"tink/handlers/profile"
 	"tink/handlers/student"
@@ -36,6 +37,7 @@ func (s *Server) Setup() {
 	student.New(s.db).Setup(g)
 	teacher.New(s.db).Setup(g)
 	group.New(s.db).Setup(g)
+	course.New(s.db).Setup(g)
 }
 
 func CreateApp(db *gorm.DB) *Server {
