@@ -6,3 +6,11 @@ type CreateGroupSchema struct {
 type UpdateGroupSchema struct {
 	Name *string `json:"name"`
 }
+type ManageStudentGroupSchema struct {
+	Students []int `json:"students" binding:"required"`
+}
+
+type ManageStudentGroupResult struct {
+	Id      int    `json:"id"`
+	Message string `json:"message"`
+}
