@@ -27,7 +27,7 @@ func (h *Handler) Load(c *gin.Context) {
 		return
 	}
 
-	c.Set("course", course)
+	c.Set("course", &course)
 	c.Next()
 }
 
@@ -79,7 +79,7 @@ func (h *Handler) Update(c *gin.Context) {
 		return
 	}
 
-	course := (c.MustGet("course")).(models.Course)
+	course := (c.MustGet("course")).(*models.Course)
 
 	if body.Name != nil {
 		course.Name = *body.Name
@@ -106,7 +106,7 @@ func (h *Handler) Update(c *gin.Context) {
 }
 
 func (h *Handler) Destroy(c *gin.Context) {
-	course := (c.MustGet("course")).(models.Course)
+	course := (c.MustGet("course")).(*models.Course)
 
 	if err := h.db.Delete(&course).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -115,15 +115,99 @@ func (h *Handler) Destroy(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+func (h *Handler) AddMember(c *gin.Context) {
+	var body ManageCourseMemberSchema
+
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	course := (c.MustGet("course")).(*models.Course)
+	course.TeacherId = nil
+
+	result := make([]ManageCourseMemberResult, len(body.Students))
+	students := []models.Student{}
+
+	tx := h.db.Begin()
+	for i, id := range body.Students {
+		var student models.Student
+		result[i].Id = id
+
+		if tx.Take(&student, id).Error != nil {
+			result[i].Message = "Failed because student was not found"
+		} else {
+			result[i].Message = "Successfully added student to this course"
+			students = append(students, student)
+		}
+	}
+	if err := tx.Model(&course).Omit("Students.*").Association("Students").Append(students); err != nil {
+		tx.Rollback()
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	tx.Commit()
+
+	c.JSON(http.StatusMultiStatus, result)
+}
+func (h *Handler) RemoveMember(c *gin.Context) {
+	var body ManageCourseMemberSchema
+
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	course := (c.MustGet("course")).(*models.Course)
+	course.TeacherId = nil
+
+	result := make([]ManageCourseMemberResult, len(body.Students))
+	students := []models.Student{}
+
+	tx := h.db.Begin()
+	for i, id := range body.Students {
+		var student models.Student
+		result[i].Id = id
+
+		if tx.Take(&student, id).Error != nil {
+			result[i].Message = "Failed because student was not found"
+		} else {
+			result[i].Message = "Successfully removed student from this course"
+			students = append(students, student)
+		}
+	}
+	if err := tx.Model(&course).Omit("Students.*").Association("Students").Delete(students); err != nil {
+		tx.Rollback()
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	tx.Commit()
+
+	c.JSON(http.StatusMultiStatus, result)
+}
+func (h *Handler) ShowMember(c *gin.Context) {
+	var students []models.Student
+	var course = (c.MustGet("course")).(*models.Course)
+	h.db.Model(&course).
+		Select("students.id, students.fullname, users.username").
+		Joins("left join users on users.id = user_id").
+		Association("Students").
+		Find(&students)
+	c.JSON(http.StatusOK, gin.H{"course": course, "students": students})
+}
+
 func (h *Handler) Setup(r *gin.RouterGroup) {
 	router := r.Group("")
 	router.Use(middlewares.Guard())
 	router.GET("/courses", h.Index)
 	router.GET("/courses/:id", h.Load, h.Show)
+	router.GET("/courses/:id/students", h.Load, h.ShowMember)
 	router.Use(middlewares.Gate("admin"))
 	router.POST("/courses", h.Store)
+	router.POST("/courses/:id/students", h.Load, h.AddMember)
 	router.PUT("/courses/:id", h.Load, h.Update)
 	router.DELETE("/courses/:id", h.Load, h.Destroy)
+	router.DELETE("/courses/:id/students", h.Load, h.RemoveMember)
 }
 
 func New(db *gorm.DB) *Handler {
