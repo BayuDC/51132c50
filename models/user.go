@@ -22,6 +22,9 @@ type User struct {
 	Role     role   `json:"role" gorm:"type:role"`
 }
 
+var UserExists = errors.New("Username is taken")
+var UserNotFound = errors.New("User not found")
+
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 	count := int64(0)
 	err = tx.Model(&User{}).
@@ -29,7 +32,7 @@ func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 		Count(&count).
 		Error
 	if count > 0 {
-		err = errors.New("Username is taken")
+		err = UserExists
 	}
 	return
 }

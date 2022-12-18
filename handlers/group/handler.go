@@ -111,7 +111,7 @@ func (h *Handler) StoreStudent(c *gin.Context) {
 	}
 	tx.Commit()
 
-	c.JSON(http.StatusOK, result)
+	c.JSON(http.StatusMultiStatus, result)
 }
 
 func (h *Handler) Update(c *gin.Context) {
@@ -175,7 +175,7 @@ func (h *Handler) DeleteStudent(c *gin.Context) {
 	}
 	tx.Commit()
 
-	c.JSON(http.StatusOK, result)
+	c.JSON(http.StatusMultiStatus, result)
 }
 
 func (h *Handler) Setup(r *gin.RouterGroup) {

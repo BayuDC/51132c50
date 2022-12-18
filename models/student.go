@@ -1,5 +1,7 @@
 package models
 
+import "errors"
+
 type Student struct {
 	Id       int    `json:"id" gorm:"primaryKey"`
 	Fullname string `json:"fullname"`
@@ -8,3 +10,5 @@ type Student struct {
 	Username string `json:"username" gorm:"->"`
 	GroupId  int    `json:"-"`
 }
+
+var StudentNotFound = errors.New("Student not found")

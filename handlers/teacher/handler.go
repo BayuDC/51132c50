@@ -62,7 +62,11 @@ func (h *Handler) Store(c *gin.Context) {
 		},
 	}
 	if err := h.db.Create(&teacher).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		if errors.Is(err, models.UserExists) {
+			c.AbortWithStatusJSON(http.StatusConflict, gin.H{"message": err.Error()})
+		} else {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
 		return
 	}
 	teacher.Username = teacher.User.Username
@@ -82,7 +86,11 @@ func (h *Handler) Update(c *gin.Context) {
 		teacher.Fullname = *body.Fullname
 	}
 	if err := h.db.Omit("User").Save(&teacher).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		if errors.Is(err, models.UserExists) {
+			c.AbortWithStatusJSON(http.StatusConflict, gin.H{"message": err.Error()})
+		} else {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
 		return
 	}
 

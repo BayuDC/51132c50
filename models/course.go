@@ -1,8 +1,6 @@
 package models
 
 import (
-	"errors"
-
 	"gorm.io/gorm"
 )
 
@@ -13,8 +11,6 @@ type Course struct {
 	Teacher   *Teacher `json:"teacher" gorm:"foreignKey:TeacherId;constraint:OnDelete:SET NULL"`
 }
 
-var CourseTeacherNotFound = errors.New("Teacher not found")
-
 func (c *Course) BeforeSave(tx *gorm.DB) (err error) {
 	if c.TeacherId == nil {
 		return
@@ -23,7 +19,7 @@ func (c *Course) BeforeSave(tx *gorm.DB) (err error) {
 	var teacher Teacher
 	var result = tx.Take(&teacher, *c.TeacherId)
 	if result.RowsAffected == 0 {
-		err = CourseTeacherNotFound
+		err = TeacherNotFound
 	} else {
 		err = result.Error
 	}
