@@ -195,6 +195,30 @@ func (h *Handler) ShowMember(c *gin.Context) {
 		Find(&students)
 	c.JSON(http.StatusOK, gin.H{"course": course, "students": students})
 }
+func (h *Handler) Check(c *gin.Context) {
+	course := (c.MustGet("course")).(*models.Course)
+	user := (c.MustGet("user")).(*middlewares.User)
+
+	c.Status(http.StatusForbidden)
+	switch user.Role {
+	case "teacher":
+		if user.Userable != *course.TeacherId {
+			return
+		}
+	case "student":
+		if h.db.Model(&course).
+			Where("students.id = ?", user.Userable).
+			Association("Students").
+			Count() == 0 {
+			return
+		}
+	default:
+		return
+	}
+
+	c.Status(http.StatusOK)
+	c.Next()
+}
 
 func (h *Handler) Setup(r *gin.RouterGroup) {
 	router := r.Group("")
@@ -202,6 +226,7 @@ func (h *Handler) Setup(r *gin.RouterGroup) {
 	router.GET("/courses", h.Index)
 	router.GET("/courses/:id", h.Load, h.Show)
 	router.GET("/courses/:id/students", h.Load, h.ShowMember)
+	router.HEAD("/courses/:id/check", h.Load, h.Check)
 	router.Use(middlewares.Gate("admin"))
 	router.POST("/courses", h.Store)
 	router.POST("/courses/:id/students", h.Load, h.AddMember)
