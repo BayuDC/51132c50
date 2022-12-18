@@ -20,14 +20,14 @@ func (c *Course) BeforeSave(tx *gorm.DB) (err error) {
 		return
 	}
 
-	count := int64(0)
-	err = tx.Model(&Teacher{}).
-		Where("id = ?", c.TeacherId).
-		Count(&count).
-		Error
-	if count == 0 {
+	var teacher Teacher
+	var result = tx.Take(&teacher, *c.TeacherId)
+	if result.RowsAffected == 0 {
 		err = CourseTeacherNotFound
+	} else {
+		err = result.Error
 	}
+	c.Teacher = &teacher
 
 	return
 }

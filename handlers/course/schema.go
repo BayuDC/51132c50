@@ -5,5 +5,6 @@ type CreateCourseSchema struct {
 	Teacher *int   `json:"teacher"`
 }
 type UpdateCourseSchema struct {
-	Name *string `json:"name"`
+	Name    *string `json:"name"`
+	Teacher *int    `json:"teacher"`
 }

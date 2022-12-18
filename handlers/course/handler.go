@@ -84,8 +84,16 @@ func (h *Handler) Update(c *gin.Context) {
 	if body.Name != nil {
 		course.Name = *body.Name
 	}
+	if body.Teacher != nil {
+		if *body.Teacher == 0 {
+			course.TeacherId = nil
+			course.Teacher = nil
+		} else {
+			course.TeacherId = body.Teacher
+		}
+	}
 
-	if err := h.db.Save(&course).Error; err != nil {
+	if err := h.db.Omit("Teacher").Save(&course).Error; err != nil {
 		if errors.Is(err, models.CourseTeacherNotFound) {
 			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
 		} else {
@@ -96,6 +104,30 @@ func (h *Handler) Update(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"course": course})
 }
+
+// func (h *Handler) Transfer(c *gin.Context) {
+// 	var body TransferCourseSchema
+
+// 	if err := c.ShouldBindJSON(&body); err != nil {
+// 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+// 		return
+// 	}
+
+// 	course := (c.MustGet("course")).(models.Course)
+
+// 	course.TeacherId = nil
+
+// 	if err := h.db.Omit("Teacher").Save(&course).Error; err != nil {
+// 		if errors.Is(err, models.CourseTeacherNotFound) {
+// 			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+// 		} else {
+// 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+// 		}
+// 		return
+// 	}
+
+// 	c.Status(http.StatusNoContent)
+// }
 func (h *Handler) Destroy(c *gin.Context) {
 	course := (c.MustGet("course")).(models.Course)
 
