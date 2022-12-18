@@ -10,10 +10,12 @@ import (
 )
 
 type User struct {
-	Username string
-	Fullname string
-	Secure   bool
-	Role     string
+	Id       int    `json:"id"`
+	Userable int    `json:"userable"`
+	Username string `json:"username"`
+	Fullname string `json:"fullname"`
+	Secure   bool   `json:"secure"`
+	Role     string `json:"role"`
 }
 
 func Auth() gin.HandlerFunc {
@@ -35,6 +37,8 @@ func Auth() gin.HandlerFunc {
 
 		claims, _ := token.Claims.(jwt.MapClaims)
 		user := User{
+			Id:       int(claims["id"].(float64)),
+			Userable: int(claims["userable"].(float64)),
 			Username: claims["username"].(string),
 			Fullname: claims["fullname"].(string),
 			Secure:   claims["secure"].(bool),

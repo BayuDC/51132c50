@@ -45,10 +45,12 @@ func (h *Handler) Login(c *gin.Context) {
 		var student models.Student
 		h.db.Where("user_id = ?", user.Id).Find(&student)
 		user.Fullname = student.Fullname
+		user.Userable = student.Id
 	case models.RoleTeacher:
 		var teacher models.Teacher
 		h.db.Where("user_id = ?", user.Id).Find(&teacher)
 		user.Fullname = teacher.Fullname
+		user.Userable = teacher.Id
 	}
 
 	defaultPassword := false
@@ -60,7 +62,9 @@ func (h *Handler) Login(c *gin.Context) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"id":       1,
 		"fullname": user.Fullname,
+		"userable": user.Userable,
 		"username": user.Username,
 		"secure":   !defaultPassword,
 		"role":     string(user.Role),
