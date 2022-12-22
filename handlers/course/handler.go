@@ -2,7 +2,6 @@ package course
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"tink/middlewares"
 	"tink/models"
@@ -208,7 +207,6 @@ func (h *Handler) Check(c *gin.Context) {
 	switch user.Role {
 	case "teacher":
 		if course.TeacherId == nil {
-			fmt.Println("no teacher")
 			return
 		} else if *course.TeacherId != user.Userable {
 			return
