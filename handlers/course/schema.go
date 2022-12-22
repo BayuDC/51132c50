@@ -1,12 +1,14 @@
 package course
 
 type CreateCourseSchema struct {
-	Name    string `json:"name" binding:"required"`
-	Teacher *int   `json:"teacher"`
+	Name        string `json:"name" binding:"required"`
+	Description string `json:"description" binding:"required"`
+	Teacher     *int   `json:"teacher"`
 }
 type UpdateCourseSchema struct {
-	Name    *string `json:"name"`
-	Teacher *int    `json:"teacher"`
+	Name        *string `json:"name"`
+	Description *string `json:"description"`
+	Teacher     *int    `json:"teacher"`
 }
 
 type ManageCourseMemberSchema struct {

@@ -2,6 +2,7 @@ package course
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"tink/middlewares"
 	"tink/models"
@@ -55,8 +56,9 @@ func (h *Handler) Store(c *gin.Context) {
 	}
 
 	course := models.Course{
-		Name:      body.Name,
-		TeacherId: body.Teacher,
+		Name:        body.Name,
+		Description: body.Description,
+		TeacherId:   body.Teacher,
 	}
 
 	if err := h.db.Create(&course).Error; err != nil {
@@ -68,7 +70,7 @@ func (h *Handler) Store(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"group": course})
+	c.JSON(http.StatusCreated, gin.H{"course": course})
 }
 
 func (h *Handler) Update(c *gin.Context) {
@@ -83,6 +85,9 @@ func (h *Handler) Update(c *gin.Context) {
 
 	if body.Name != nil {
 		course.Name = *body.Name
+	}
+	if body.Description != nil {
+		course.Description = *body.Description
 	}
 	if body.Teacher != nil {
 		if *body.Teacher == 0 {
@@ -202,7 +207,10 @@ func (h *Handler) Check(c *gin.Context) {
 	c.Status(http.StatusForbidden)
 	switch user.Role {
 	case "teacher":
-		if user.Userable != *course.TeacherId {
+		if course.TeacherId == nil {
+			fmt.Println("no teacher")
+			return
+		} else if *course.TeacherId != user.Userable {
 			return
 		}
 	case "student":
