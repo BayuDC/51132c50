@@ -8,7 +8,7 @@ type Student struct {
 	UserId   int    `json:"-"`
 	User     User   `json:"-" gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE"`
 	Username string `json:"username" gorm:"->"`
-	GroupId  int    `json:"-"`
+	GroupId  *int   `json:"-"`
 }
 
 var StudentNotFound = errors.New("Student not found")

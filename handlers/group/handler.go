@@ -46,7 +46,7 @@ func (h *Handler) Show(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"group": group})
 }
 
-func (h *Handler) ShowStudent(c *gin.Context) {
+func (h *Handler) ShowMember(c *gin.Context) {
 	group := (c.MustGet("group")).(*models.Group)
 
 	var students []models.Student
@@ -85,7 +85,7 @@ func (h *Handler) Store(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"group": group})
 }
 
-func (h *Handler) StoreStudent(c *gin.Context) {
+func (h *Handler) AddMember(c *gin.Context) {
 	var body ManageStudentGroupSchema
 
 	if err := c.ShouldBindJSON(&body); err != nil {
@@ -146,7 +146,7 @@ func (h *Handler) Delete(c *gin.Context) {
 
 	c.Status(http.StatusNoContent)
 }
-func (h *Handler) DeleteStudent(c *gin.Context) {
+func (h *Handler) RemoveMember(c *gin.Context) {
 	var body ManageStudentGroupSchema
 
 	if err := c.ShouldBindJSON(&body); err != nil {
@@ -164,7 +164,7 @@ func (h *Handler) DeleteStudent(c *gin.Context) {
 
 		if tx.First(&student, id).Error != nil {
 			result[i].Message = "Failed because student was not found"
-		} else if student.GroupId != group.Id {
+		} else if *student.GroupId != group.Id {
 			result[i].Message = "Failed because student is not belongs to this group"
 		} else if tx.Model(&student).Update("group_id", nil).Error != nil {
 			result[i].Message = "Failed with an unknown error"
@@ -183,13 +183,13 @@ func (h *Handler) Setup(r *gin.RouterGroup) {
 	router.Use(middlewares.Guard())
 	router.GET("/groups", h.Index)
 	router.GET("/groups/:id", h.Load, h.Show)
-	router.GET("/groups/:id/students", h.Load, h.ShowStudent)
+	router.GET("/groups/:id/students", h.Load, h.ShowMember)
 	router.Use(middlewares.Gate("admin"))
 	router.POST("/groups", h.Store)
-	router.POST("/groups/:id/students", h.Load, h.StoreStudent)
+	router.POST("/groups/:id/students", h.Load, h.AddMember)
 	router.PUT("/groups/:id", h.Load, h.Update)
 	router.DELETE("/groups/:id", h.Load, h.Delete)
-	router.DELETE("/groups/:id/students", h.Load, h.DeleteStudent)
+	router.DELETE("/groups/:id/students", h.Load, h.RemoveMember)
 }
 func New(db *gorm.DB) *Handler {
 	return &Handler{db}
