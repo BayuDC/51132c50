@@ -19,3 +19,9 @@ type ManageCourseMemberResult struct {
 	Id      int    `json:"id"`
 	Message string `json:"message"`
 }
+
+type CreateAssignmentSchema struct {
+	Name        string `json:"name" binding:"required"`
+	Description string `json:"description" binding:"required"`
+	Type        string `json:"type" binding:"required,oneof=empty files"`
+}

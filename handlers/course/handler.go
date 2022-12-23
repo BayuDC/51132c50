@@ -226,6 +226,41 @@ func (h *Handler) Check(c *gin.Context) {
 	c.Next()
 }
 
+func (h *Handler) StoreAssigment(c *gin.Context) {
+	var body CreateAssignmentSchema
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	course := (c.MustGet("course")).(*models.Course)
+	assignment := models.Assignment{
+		Name:        body.Name,
+		Description: body.Description,
+		Type:        body.Type,
+		CourseId:    course.Id,
+	}
+
+	if err := h.db.Create(&assignment).Error; err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"assignment": assignment,
+	})
+}
+func (h *Handler) ShowAssignment(c *gin.Context) {
+	course := (c.MustGet("course")).(*models.Course)
+
+	if err := h.db.Find(&course.Assignments).Error; err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"course": course, "assignments": course.Assignments})
+}
+
 func (h *Handler) Setup(r *gin.RouterGroup) {
 	router := r.Group("")
 	router.Use(middlewares.Guard())
@@ -233,8 +268,8 @@ func (h *Handler) Setup(r *gin.RouterGroup) {
 	router.GET("/courses/:id", h.Load, h.Show)
 	router.GET("/courses/:id/students", h.Load, h.ShowMember)
 	router.HEAD("/courses/:id/check", h.Load, h.Check)
-	router.GET("/courses/:id/assignments", h.Load, h.Check)
-	router.POST("/courses/:id/assignments", middlewares.Gate("teacher"), h.Load, h.Check)
+	router.GET("/courses/:id/assignments", h.Load, h.Check, h.ShowAssignment)
+	router.POST("/courses/:id/assignments", middlewares.Gate("teacher"), h.Load, h.Check, h.StoreAssigment)
 
 	router.Use(middlewares.Gate("admin"))
 	router.POST("/courses", h.Store)
