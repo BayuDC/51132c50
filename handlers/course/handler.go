@@ -233,6 +233,9 @@ func (h *Handler) Setup(r *gin.RouterGroup) {
 	router.GET("/courses/:id", h.Load, h.Show)
 	router.GET("/courses/:id/students", h.Load, h.ShowMember)
 	router.HEAD("/courses/:id/check", h.Load, h.Check)
+	router.GET("/courses/:id/assignments", h.Load, h.Check)
+	router.POST("/courses/:id/assignments", middlewares.Gate("teacher"), h.Load, h.Check)
+
 	router.Use(middlewares.Gate("admin"))
 	router.POST("/courses", h.Store)
 	router.POST("/courses/:id/students", h.Load, h.AddMember)

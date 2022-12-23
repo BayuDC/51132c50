@@ -5,12 +5,13 @@ import (
 )
 
 type Course struct {
-	Id          int       `json:"id" grom:"primaryKey"`
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	TeacherId   *int      `json:"-"`
-	Teacher     *Teacher  `json:"teacher" gorm:"foreignKey:TeacherId;constraint:OnDelete:SET NULL"`
-	Students    []Student `json:"-" gorm:"many2many:student_courses;"`
+	Id          int          `json:"id" grom:"primaryKey"`
+	Name        string       `json:"name"`
+	Description string       `json:"description"`
+	TeacherId   *int         `json:"-"`
+	Teacher     *Teacher     `json:"teacher" gorm:"foreignKey:TeacherId;constraint:OnDelete:SET NULL"`
+	Students    []Student    `json:"-" gorm:"many2many:student_courses;"`
+	Assignments []Assignment `json:"-"`
 }
 
 func (c *Course) BeforeSave(tx *gorm.DB) (err error) {

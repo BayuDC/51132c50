@@ -20,7 +20,7 @@ type User struct {
 	Userable int    `json:"userable" gorm:"-"`
 	Username string `json:"username" gorm:"unique"`
 	Password string `json:"-"`
-	Role     role   `json:"role" gorm:"type:role"`
+	Role     role   `json:"role" gorm:"type:varchar(255)"`
 }
 
 var UserExists = errors.New("Username is taken")
