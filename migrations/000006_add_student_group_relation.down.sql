@@ -1,1 +1,0 @@
-ALTER TABLE students DROP COLUMN IF EXISTS group_id

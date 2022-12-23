@@ -1,5 +1,0 @@
-ALTER TABLE students
-ADD COLUMN group_id INTEGER NULL;
-ALTER TABLE students
-ADD FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE
-SET NULL;
