@@ -47,11 +47,56 @@ func (h *Handler) Check(c *gin.Context) {
 	c.Next()
 }
 
+func (h *Handler) SetSchedule(c *gin.Context) {
+	var body SetScheduleSchema
+
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if body.OpenAt != nil && body.CloseAt != nil {
+		if (*body.CloseAt).Sub(*body.OpenAt) < 0 {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Close time must be after open time"})
+			return
+		}
+	}
+
+	assignment := c.MustGet("assignment").(*models.Assignment)
+	schedule := models.Schedule{
+		AssignmentId: assignment.Id,
+		GroupId:      body.Group,
+	}
+
+	if err := h.db.FirstOrCreate(&schedule, &schedule).Error; err != nil {
+		if errors.Is(err, models.GroupNotFound) {
+			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+		} else {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
+		return
+	}
+
+	if body.OpenAt != nil && body.CloseAt != nil {
+		schedule.OpenAt = *body.OpenAt
+		schedule.CloseAt = *body.CloseAt
+	}
+	if err := h.db.Save(&schedule).Error; err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+func (h *Handler) SetAttachment(c *gin.Context) {}
+
 func (h *Handler) Setup(r *gin.RouterGroup) {
 	router := r.Group("")
 	router.Use(h.Load)
 	router.Use(h.Check)
 	router.GET("/assignments/:id", h.Show)
+	router.PATCH("/assignments/:id/schedules", middlewares.Gate("teacher"), h.SetSchedule)
+	router.PATCH("/assignments/:id/attachments", middlewares.Gate("teacher"), h.SetAttachment)
 }
 
 func New(db *gorm.DB) *Handler {
