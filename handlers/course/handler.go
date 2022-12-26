@@ -203,22 +203,8 @@ func (h *Handler) Check(c *gin.Context) {
 	course := (c.MustGet("course")).(*models.Course)
 	user := (c.MustGet("user")).(*middlewares.User)
 
-	c.Status(http.StatusForbidden)
-	switch user.Role {
-	case "teacher":
-		if course.TeacherId == nil {
-			return
-		} else if *course.TeacherId != user.Userable {
-			return
-		}
-	case "student":
-		if h.db.Model(&course).
-			Where("students.id = ?", user.Userable).
-			Association("Students").
-			Count() == 0 {
-			return
-		}
-	default:
+	if !course.Check(h.db, user) {
+		c.AbortWithStatus(http.StatusForbidden)
 		return
 	}
 

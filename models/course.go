@@ -1,6 +1,8 @@
 package models
 
 import (
+	"tink/middlewares"
+
 	"gorm.io/gorm"
 )
 
@@ -29,4 +31,26 @@ func (c *Course) BeforeSave(tx *gorm.DB) (err error) {
 	c.Teacher = &teacher
 
 	return
+}
+
+func (c *Course) Check(tx *gorm.DB, user *middlewares.User) bool {
+	switch user.Role {
+	case "teacher":
+		if c.TeacherId == nil {
+			return false
+		} else if *c.TeacherId != user.Userable {
+			return false
+		}
+	case "student":
+		if tx.Model(&c).
+			Where("students.id = ?", user.Userable).
+			Association("Students").
+			Count() == 0 {
+			return false
+		}
+	default:
+		return false
+	}
+
+	return true
 }
