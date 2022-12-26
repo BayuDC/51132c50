@@ -16,3 +16,6 @@
 
 # Fucking env file
 .env
+
+# Fucking data dir
+data/

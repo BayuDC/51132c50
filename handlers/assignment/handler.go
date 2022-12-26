@@ -2,7 +2,10 @@ package assignment
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"tink/middlewares"
 	"tink/models"
 
@@ -88,7 +91,23 @@ func (h *Handler) SetSchedule(c *gin.Context) {
 
 	c.Status(http.StatusNoContent)
 }
-func (h *Handler) SetAttachment(c *gin.Context) {}
+func (h *Handler) SetAttachment(c *gin.Context) {
+	assignment := c.MustGet("assignment").(*models.Assignment)
+
+	form, _ := c.MultipartForm()
+	files := form.File["attachments[]"]
+
+	filedir := fmt.Sprintf("./data/assignment%d/_", assignment.Id)
+	if _, err := os.Stat(filedir); os.IsNotExist(err) {
+		os.MkdirAll(filedir, os.ModePerm)
+	}
+
+	for _, file := range files {
+		c.SaveUploadedFile(file, filepath.Join(filedir, filepath.Base(file.Filename)))
+	}
+
+	c.Status(http.StatusNoContent)
+}
 
 func (h *Handler) Setup(r *gin.RouterGroup) {
 	router := r.Group("")
