@@ -7,11 +7,11 @@ import (
 )
 
 type Schedule struct {
-	Id           int       `json:"id" grom:"primaryKey"`
-	AssignmentId int       `json:"-"`
-	GroupId      int       `json:"-"`
-	OpenAt       time.Time `json:"open_at"`
-	CloseAt      time.Time `json:"close_at"`
+	Id           int        `json:"id" grom:"primaryKey"`
+	AssignmentId int        `json:"-"`
+	GroupId      int        `json:"-"`
+	OpenAt       *time.Time `json:"open_at"`
+	CloseAt      *time.Time `json:"close_at"`
 }
 
 type Tabler interface {

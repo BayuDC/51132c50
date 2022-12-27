@@ -81,8 +81,8 @@ func (h *Handler) SetSchedule(c *gin.Context) {
 	}
 
 	if body.OpenAt != nil && body.CloseAt != nil {
-		schedule.OpenAt = *body.OpenAt
-		schedule.CloseAt = *body.CloseAt
+		schedule.OpenAt = body.OpenAt
+		schedule.CloseAt = body.CloseAt
 	}
 	if err := h.db.Save(&schedule).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
